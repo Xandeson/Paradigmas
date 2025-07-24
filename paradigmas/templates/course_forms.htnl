@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Sistema Acadêmico{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="h2">
+        <i class="bi bi-book me-2"></i>
+        {{ title }}
+    </h1>
+    <p class="text-muted">
+        {% if course %}
+            Atualize as informações do curso
+        {% else %}
+            Preencha os dados do novo curso
+        {% endif %}
+    </p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">
+                                <strong>{{ form.name.label }} *</strong>
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.name.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.code.id_for_label }}" class="form-label">
+                                <strong>{{ form.code.label }} *</strong>
+                            </label>
+                            {{ form.code }}
+                            {% if form.code.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.code.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            <strong>{{ form.description.label }} *</strong>
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.description.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.duration.id_for_label }}" class="form-label">
+                                <strong>{{ form.duration.label }} *</strong>
+                            </label>
+                            {{ form.duration }}
+                            {% if form.duration.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.duration.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.coordinator.id_for_label }}" class="form-label">
+                                <strong>{{ form.coordinator.label }} *</strong>
+                            </label>
+                            {{ form.coordinator }}
+                            {% if form.coordinator.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.coordinator.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="border-top pt-3 mt-4">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'course_list' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>
+                                {% if course %}Atualizar{% else %}Salvar{% endif %}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

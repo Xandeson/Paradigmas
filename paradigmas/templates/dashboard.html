@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Sistema Acadêmico{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="h2">
+        <i class="bi bi-speedometer2 me-2"></i>
+        Dashboard
+    </h1>
+    <p class="text-muted">Visão geral do sistema acadêmico</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Total de Cursos
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ total_courses }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-book fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card success">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Alunos Ativos
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ active_students }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-people fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card warning">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Formados
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ graduated_students }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-mortarboard fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card info">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Total de Alunos
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ total_students }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-graph-up fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Content Row -->
+<div class="row">
+    <!-- Cursos Mais Populares -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-trophy me-2"></i>
+                    Cursos Mais Populares
+                </h6>
+            </div>
+            <div class="card-body">
+                {% for course in popular_courses %}
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-book"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">{{ course.name }}</h6>
+                        <small class="text-muted">{{ course.code }}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-primary">{{ course.student_count }} alunos</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">Nenhum curso cadastrado</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Últimos Alunos Cadastrados -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-success">
+                    <i class="bi bi-person-plus me-2"></i>
+                    Últimos Alunos Cadastrados
+                </h6>
+            </div>
+            <div class="card-body">
+                {% for student in recent_students %}
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" 
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-person"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">{{ student.name }}</h6>
+                        <small class="text-muted">{{ student.registration }}</small>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted d-block">{{ student.course.name }}</small>
+                        <small class="text-muted">{{ student.semester }}º semestre</small>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">Nenhum aluno cadastrado</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
