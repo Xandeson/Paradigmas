@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir Curso - Sistema Acadêmico{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="h2 text-danger">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Confirmar Exclusão
+    </h1>
+    <p class="text-muted">Esta ação não pode ser desfeita</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-danger">
+            <div class="card-body text-center">
+                <i class="bi bi-exclamation-triangle text-danger display-1 mb-3"></i>
+                
+                <h4 class="mb-3">Tem certeza que deseja excluir este curso?</h4>
+                
+                <div class="bg-light p-3 rounded mb-4">
+                    <h5 class="mb-1">{{ course.name }}</h5>
+                    <p class="text-muted mb-1">{{ course.code }}</p>
+                    <small class="text-muted">
+                        {{ course.get_student_count }} aluno(s) matriculado(s)
+                    </small>
+                </div>
+                
+                {% if course.get_student_count > 0 %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Atenção:</strong> Este curso possui alunos matriculados. 
+                    Ao excluir o curso, todos os alunos também serão removidos.
+                </div>
+                {% endif %}
+                
+                <form method="post" class="d-inline">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{% url 'course_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-2"></i>
+                            Sim, Excluir
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

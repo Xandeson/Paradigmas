@@ -1,8 +1,9 @@
 from django.db import models
+from people.models import BaseModel
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
-class Course(models.Model):
+class Course(BaseModel):
     name = models.CharField(max_length=200, verbose_name="Nome do Curso")
     code = models.CharField(max_length=20, unique=True, verbose_name="Código")
     description = models.TextField(verbose_name="Descrição")
@@ -26,7 +27,7 @@ class Course(models.Model):
         return self.students.count()
 
 
-class Student(models.Model):
+class Student(BaseModel):
     STATUS_CHOICES = [
         ('active', 'Ativo'),
         ('inactive', 'Inativo'),

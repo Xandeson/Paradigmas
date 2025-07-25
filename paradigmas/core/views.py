@@ -1,7 +1,8 @@
-from django.shortcuts import render
-from .models import Course
-from .models import Student
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Course, Student
+from django.contrib import messages
+from django.db.models import Count
+from .forms import CourseForm, StudentForm
 
 def dashboard(request):
     """Dashboard principal com estatísticas"""
@@ -36,7 +37,7 @@ def dashboard(request):
 def course_list(request):
     """Lista todos os cursos"""
     courses = Course.objects.all()
-    return render(request, 'core/course_list.html', {'courses': courses})
+    return render(request, 'course_list.html', {'courses': courses})
 
 
 def course_create(request):
