@@ -2,8 +2,8 @@ from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from .models import Student
-from .forms import StudentForm
+from people.models import Student
+from people.forms import StudentForm
 from core.mixins import TitleMixin, BreadcrumbMixin, FormMessageMixin, ModelInfoMixin
 
 

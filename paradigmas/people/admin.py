@@ -21,7 +21,7 @@ class StudentAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
         ('Timestamps', {
-            'fields': ('enrollment_date', 'created_at', 'updated_at'),
+            'fields': ('enrollment_date',),
             'classes': ('collapse',)
         }),
     )
