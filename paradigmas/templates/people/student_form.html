@@ -4,17 +4,27 @@
 
 {% block content %}
 <div class="page-header">
-    <h1 class="h2">
-        <i class="bi bi-person-plus me-2"></i>
-        {{ title }}
-    </h1>
-    <p class="text-muted">
-        {% if student %}
-            Atualize as informações do aluno
-        {% else %}
-            Preencha os dados do novo aluno
+    {% if page_title %}
+        <h1 class="h2">
+            <i class="bi bi-person-plus me-2"></i>
+            {{ page_title }}
+        </h1>
+        {% if page_subtitle %}
+            <p class="text-muted">{{ page_subtitle }}</p>
         {% endif %}
-    </p>
+    {% else %}
+        <h1 class="h2">
+            <i class="bi bi-person-plus me-2"></i>
+            {{ title }}
+        </h1>
+        <p class="text-muted">
+            {% if student %}
+                Atualize as informações do aluno
+            {% else %}
+                Preencha os dados do novo aluno
+            {% endif %}
+        </p>
+    {% endif %}
 </div>
 
 <div class="row justify-content-center">
@@ -104,7 +114,7 @@
                     
                     <div class="border-top pt-3 mt-4">
                         <div class="d-flex justify-content-end gap-2">
-                            <a href="{% url 'student_list' %}" class="btn btn-outline-secondary">
+                            <a href="{% url 'people:student_list' %}" class="btn btn-outline-secondary">
                                 <i class="bi bi-x-circle me-2"></i>
                                 Cancelar
                             </a>

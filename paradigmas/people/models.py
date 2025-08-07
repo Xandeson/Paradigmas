@@ -1,80 +1,48 @@
-"""from django.db import models
-
-class Curso(models.Model):
-    nome = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.nome  
-
-class Aluno(models.Model):
-    nome = models.CharField(max_length=100)
-    idade = models.IntegerField()
-    curso = models.ForeignKey(Curso, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"{self.nome}  - {self.curso.nomes}"
-    def apresentar(self):
-        return f"Olá, meu nome é {self.nome} e tenho {self.idade} anos e faco {self.curso.nome}."""
-# Create your models here.
-
-import uuid
-
-from django.contrib.auth import get_user_model
-from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
-
-# Create your models here.
-User = get_user_model()
+from core.models import BaseModel, Course
 
 
-def get_sentinel_user():
-    return get_user_model().objects.get_or_create(email="deleted")[0]
+class Student(BaseModel):
+    STATUS_CHOICES = [
+        ('active', _('Ativo')),
+        ('inactive', _('Inativo')),
+        ('graduated', _('Formado')),
+    ]
 
-
-class UUIDModel(models.Model):
-    uuid = models.UUIDField(unique=True, editable=False, default=uuid.uuid4)
-
-    class Meta:
-        abstract = True
-
-
-class CreationTimestampedModel(models.Model):
-    created_at = models.DateTimeField(
-        _("Created at"),
-        auto_now_add=True,
-        editable=False,
+    name = models.CharField(max_length=200, verbose_name=_("Nome Completo"))
+    email = models.EmailField(unique=True, verbose_name=_("E-mail"))
+    registration = models.CharField(max_length=20, unique=True, verbose_name=_("Matrícula"))
+    course = models.ForeignKey(
+        Course, 
+        on_delete=models.CASCADE, 
+        related_name='students',
+        verbose_name=_("Curso")
     )
-    created_by = models.ForeignKey(
-        User,
-        verbose_name=_("Created by"),
-        on_delete=models.SET(get_sentinel_user),
-        null=True,
-        related_name="created_%(app_label)s_%(class)s_set",
+    semester = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name=_("Semestre Atual")
     )
-
-    class Meta:
-        abstract = True
-
-
-class UpdateTimestampedModel(models.Model):
-    updated_at = models.DateTimeField(_("Updated at"), auto_now=True, editable=False)
-    updated_by = models.ForeignKey(
-        User,
-        verbose_name=_("Updated by"),
-        on_delete=models.SET(get_sentinel_user),
-        null=True,
-        related_name="updated_%(app_label)s_%(class)s_set",
+    status = models.CharField(
+        max_length=10, 
+        choices=STATUS_CHOICES, 
+        default='active',
+        verbose_name=_("Status")
     )
+    enrollment_date = models.DateField(auto_now_add=True, verbose_name=_("Data de Matrícula"))
 
     class Meta:
-        abstract = True
+        verbose_name = _("Aluno")
+        verbose_name_plural = _("Alunos")
+        ordering = ['name']
 
+    def __str__(self):
+        return f"{self.name} ({self.registration})"
 
-class TimestampedModel(CreationTimestampedModel, UpdateTimestampedModel):
-    class Meta:
-        abstract = True
-
-
-class BaseModel(UUIDModel, TimestampedModel):
-    class Meta:
-        abstract = True
+    def get_status_display_class(self):
+        status_classes = {
+            'active': 'success',
+            'inactive': 'danger',
+            'graduated': 'primary',
+        }
+        return status_classes.get(self.status, 'secondary')

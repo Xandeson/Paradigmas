@@ -1,147 +1,128 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Course, Student
+from django.shortcuts import render
 from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count
-from .forms import CourseForm, StudentForm
+from django.urls import reverse_lazy
+from django.views.generic import (
+    ListView, CreateView, UpdateView, DeleteView, TemplateView
+)
+from .models import Course
+from .forms import CourseForm
+from .mixins import TitleMixin, BreadcrumbMixin, FormMessageMixin, ModelInfoMixin
 
-def dashboard(request):
+
+class DashboardView(TitleMixin, BreadcrumbMixin, TemplateView):
     """Dashboard principal com estatísticas"""
-    courses = Course.objects.all()
-    students = Student.objects.all()
+    template_name = 'core/dashboard.html'
+    title = "Dashboard"
+    subtitle = "Visão geral do sistema acadêmico"
+    breadcrumbs = [
+        {'name': 'Dashboard', 'url': None, 'active': True}
+    ]
     
-    # Estatísticas
-    total_courses = courses.count()
-    total_students = students.count()
-    active_students = students.filter(status='active').count()
-    graduated_students = students.filter(status='graduated').count()
-    
-    # Cursos mais populares
-    popular_courses = courses.annotate(
-        student_count=Count('students')
-    ).order_by('-student_count')[:5]
-    
-    # Últimos alunos cadastrados
-    recent_students = students.order_by('-created_at')[:5]
-    
-    context = {
-        'total_courses': total_courses,
-        'total_students': total_students,
-        'active_students': active_students,
-        'graduated_students': graduated_students,
-        'popular_courses': popular_courses,
-        'recent_students': recent_students,
-    }
-    
-    return render(request, 'dashboard.html', context)
-      
-def course_list(request):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        courses = Course.objects.all()
+        
+        # Import Student from people app
+        try:
+            from people.models import Student
+            students = Student.objects.all()
+        except ImportError:
+            students = []
+        
+        # Estatísticas
+        context.update({
+            'total_courses': courses.count(),
+            'total_students': students.count() if students else 0,
+            'active_students': students.filter(status='active').count() if students else 0,
+            'graduated_students': students.filter(status='graduated').count() if students else 0,
+            'popular_courses': courses.annotate(
+                student_count=Count('students')
+            ).order_by('-student_count')[:5],
+            'recent_students': students.order_by('-created_at')[:5] if students else [],
+        })
+        
+        return context
+
+
+# Course Views
+class CourseListView(TitleMixin, BreadcrumbMixin, ModelInfoMixin, ListView):
     """Lista todos os cursos"""
-    courses = Course.objects.all()
-    return render(request, 'course_list.html', {'courses': courses})
+    model = Course
+    template_name = 'core/course_list.html'
+    context_object_name = 'courses'
+    paginate_by = 12
+    title = "Cursos"
+    subtitle = "Gerencie os cursos disponíveis"
+    breadcrumbs = [
+        {'name': 'Dashboard', 'url': 'dashboard', 'active': False},
+        {'name': 'Cursos', 'url': None, 'active': True}
+    ]
 
 
-def course_create(request):
+class CourseCreateView(TitleMixin, BreadcrumbMixin, FormMessageMixin, SuccessMessageMixin, CreateView):
     """Criar novo curso"""
-    if request.method == 'POST':
-        form = CourseForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Curso criado com sucesso!')
-            return redirect('course_list')
-    else:
-        form = CourseForm()
+    model = Course
+    form_class = CourseForm
+    template_name = 'core/course_form.html'
+    success_url = reverse_lazy('course_list')
+    title = "Novo Curso"
+    subtitle = "Preencha os dados do novo curso"
+    success_message_create = "Curso criado com sucesso!"
+    breadcrumbs = [
+        {'name': 'Dashboard', 'url': 'dashboard', 'active': False},
+        {'name': 'Cursos', 'url': 'course_list', 'active': False},
+        {'name': 'Novo Curso', 'url': None, 'active': True}
+    ]
     
-    return render(request, 'course_form.html', {
-        'form': form,
-        'title': 'Novo Curso'
-    })
+    def get_success_message(self, cleaned_data):
+        return super().get_success_message('create')
+    
+    def form_valid(self, form):
+        if self.request.user.is_authenticated:
+            form.instance.created_by = self.request.user
+        return super().form_valid(form)
 
 
-def course_edit(request, pk):
+class CourseUpdateView(TitleMixin, BreadcrumbMixin, FormMessageMixin, SuccessMessageMixin, UpdateView):
     """Editar curso existente"""
-    course = get_object_or_404(Course, pk=pk)
+    model = Course
+    form_class = CourseForm
+    template_name = 'core/course_form.html'
+    success_url = reverse_lazy('course_list')
+    title = "Editar Curso"
+    subtitle = "Atualize as informações do curso"
+    success_message_update = "Curso atualizado com sucesso!"
+    breadcrumbs = [
+        {'name': 'Dashboard', 'url': 'dashboard', 'active': False},
+        {'name': 'Cursos', 'url': 'course_list', 'active': False},
+        {'name': 'Editar Curso', 'url': None, 'active': True}
+    ]
     
-    if request.method == 'POST':
-        form = CourseForm(request.POST, instance=course)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Curso atualizado com sucesso!')
-            return redirect('course_list')
-    else:
-        form = CourseForm(instance=course)
+    def get_success_message(self, cleaned_data):
+        return super().get_success_message('update')
     
-    return render(request, 'course_form.html', {
-        'form': form,
-        'title': 'Editar Curso',
-        'course': course
-    })
+    def form_valid(self, form):
+        if self.request.user.is_authenticated:
+            form.instance.updated_by = self.request.user
+        return super().form_valid(form)
 
 
-def course_delete(request, pk):
+class CourseDeleteView(TitleMixin, BreadcrumbMixin, FormMessageMixin, SuccessMessageMixin, DeleteView):
     """Deletar curso"""
-    course = get_object_or_404(Course, pk=pk)
+    model = Course
+    template_name = 'core/course_confirm_delete.html'
+    success_url = reverse_lazy('course_list')
+    title = "Excluir Curso"
+    subtitle = "Confirme a exclusão do curso"
+    success_message_delete = "Curso excluído com sucesso!"
+    breadcrumbs = [
+        {'name': 'Dashboard', 'url': 'dashboard', 'active': False},
+        {'name': 'Cursos', 'url': 'course_list', 'active': False},
+        {'name': 'Excluir Curso', 'url': None, 'active': True}
+    ]
     
-    if request.method == 'POST':
-        course.delete()
-        messages.success(request, 'Curso excluído com sucesso!')
-        return redirect('course_list')
-    
-    return render(request, 'course_confirm_delete.html', {'course': course})
-
-
-# Views de Alunos
-def student_list(request):
-    """Lista todos os alunos"""
-    students = Student.objects.select_related('course').all()
-    return render(request, 'student_list.html', {'students': students})
-
-
-def student_create(request):
-    """Criar novo aluno"""
-    if request.method == 'POST':
-        form = StudentForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Aluno cadastrado com sucesso!')
-            return redirect('student_list')
-    else:
-        form = StudentForm()
-    
-    return render(request, 'student_form.html', {
-        'form': form,
-        'title': 'Novo Aluno'
-    })
-
-
-def student_edit(request, pk):
-    """Editar aluno existente"""
-    student = get_object_or_404(Student, pk=pk)
-    
-    if request.method == 'POST':
-        form = StudentForm(request.POST, instance=student)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Aluno atualizado com sucesso!')
-            return redirect('student_list')
-    else:
-        form = StudentForm(instance=student)
-    
-    return render(request, 'student_form.html', {
-        'form': form,
-        'title': 'Editar Aluno',
-        'student': student
-    })
-
-
-def student_delete(request, pk):
-    """Deletar aluno"""
-    student = get_object_or_404(Student, pk=pk)
-    
-    if request.method == 'POST':
-        student.delete()
-        messages.success(request, 'Aluno excluído com sucesso!')
-        return redirect('student_list')
-    
-    return render(request, 'student_confirm_delete.html', {'student': student})
-
-# Create your views here.
+    def get_success_message(self, cleaned_data):
+        return super().get_success_message('delete')

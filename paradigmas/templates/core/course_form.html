@@ -4,17 +4,27 @@
 
 {% block content %}
 <div class="page-header">
-    <h1 class="h2">
-        <i class="bi bi-book me-2"></i>
-        {{ title }}
-    </h1>
-    <p class="text-muted">
-        {% if course %}
-            Atualize as informações do curso
-        {% else %}
-            Preencha os dados do novo curso
+    {% if page_title %}
+        <h1 class="h2">
+            <i class="bi bi-book me-2"></i>
+            {{ page_title }}
+        </h1>
+        {% if page_subtitle %}
+            <p class="text-muted">{{ page_subtitle }}</p>
         {% endif %}
-    </p>
+    {% else %}
+        <h1 class="h2">
+            <i class="bi bi-book me-2"></i>
+            {{ title }}
+        </h1>
+        <p class="text-muted">
+            {% if course %}
+                Atualize as informações do curso
+            {% else %}
+                Preencha os dados do novo curso
+            {% endif %}
+        </p>
+    {% endif %}
 </div>
 
 <div class="row justify-content-center">
